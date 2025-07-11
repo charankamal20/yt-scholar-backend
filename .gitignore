@@ -1,0 +1,7 @@
+docs
+.env
+bin/app
+pkg/keys/*
+
+*.pem
+*.key
