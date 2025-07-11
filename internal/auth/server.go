@@ -7,19 +7,20 @@
 package auth
 
 import (
-	"fmt"
 	"os"
 
 	authStore "github.com/charankamal20/youtube-scholar-backend/database/repository/auth"
 	_ "github.com/charankamal20/youtube-scholar-backend/docs"
+	"github.com/charankamal20/youtube-scholar-backend/pkg/token"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
 
 type AuthServer struct {
-	config *oauth2.Config
-	server *gin.Engine
+	config       *oauth2.Config
+	server       *gin.Engine
+	tokenService *token.PasetoMaker
 
 	service AuthService
 }
@@ -27,7 +28,6 @@ type AuthServer struct {
 func NewAuth(srv *gin.Engine, store authStore.Querier) *AuthServer {
 	clientID := os.Getenv("CLIENT_ID")
 	clientSecret := os.Getenv("CLIENT_SEC")
-	fmt.Println(clientID, clientSecret)
 
 	conf := &oauth2.Config{
 		ClientID:     clientID,
@@ -37,10 +37,13 @@ func NewAuth(srv *gin.Engine, store authStore.Querier) *AuthServer {
 		Endpoint:     google.Endpoint,
 	}
 
+	tokenService := token.NewPasetoMaker()
+
 	authServer := &AuthServer{
-		config:  conf,
-		server:  srv,
-		service: newAuthService(store),
+		config:       conf,
+		server:       srv,
+		service:      newAuthService(store),
+		tokenService: tokenService,
 	}
 
 	authServer.registerRoutes()

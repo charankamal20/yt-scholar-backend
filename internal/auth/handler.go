@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
@@ -84,5 +85,8 @@ func (a *AuthServer) oAuthCallbackHandler(c *gin.Context) {
 		return
 	}
 
+	token, err := a.tokenService.CreateToken(userInfo.ID, userInfo.Email)
+
+	c.SetCookie("access_token", token, int(time.Hour*24), "/", "localhost", true, true)
 	c.JSON(http.StatusOK, "Logged In")
 }

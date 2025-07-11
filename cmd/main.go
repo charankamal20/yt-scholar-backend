@@ -26,8 +26,9 @@ import (
 func init() {
 	err := godotenv.Load()
 	if err != nil {
-		panic("emv not found")
+		log.Println("emv not found")
 	}
+
 }
 
 func main() {
