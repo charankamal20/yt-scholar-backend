@@ -1,3 +1,6 @@
 docs
 .env
 bin/app
+keys/*
+
+*.pem

@@ -9,10 +9,9 @@ import (
 	"context"
 )
 
-const createUser = `-- name: CreateUser :one
+const createUser = `-- name: CreateUser :exec
 INSERT INTO users (user_id, email, name, profile_pic, updated_at, created_at)
 VALUES ($1, $2, $3, $4, NOW(), NOW())
-RETURNING user_id, name, email, profile_pic, updated_at, created_at
 `
 
 type CreateUserParams struct {
@@ -22,23 +21,14 @@ type CreateUserParams struct {
 	ProfilePic string `json:"profile_pic"`
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, createUser,
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
+	_, err := q.db.ExecContext(ctx, createUser,
 		arg.UserID,
 		arg.Email,
 		arg.Name,
 		arg.ProfilePic,
 	)
-	var i User
-	err := row.Scan(
-		&i.UserID,
-		&i.Name,
-		&i.Email,
-		&i.ProfilePic,
-		&i.UpdatedAt,
-		&i.CreatedAt,
-	)
-	return i, err
+	return err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one

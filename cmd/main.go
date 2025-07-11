@@ -13,13 +13,22 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/joho/godotenv"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	authStore "github.com/charankamal20/youtube-scholar-backend/database/repository/auth"
 	"github.com/charankamal20/youtube-scholar-backend/internal/auth"
 	"github.com/gin-gonic/gin"
+	_ "github.com/lib/pq"
 )
+
+func init() {
+	err := godotenv.Load()
+	if err != nil {
+		panic("emv not found")
+	}
+}
 
 func main() {
 	server := gin.Default()
