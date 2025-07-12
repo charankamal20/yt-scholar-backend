@@ -12,7 +12,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/joho/godotenv"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -33,6 +35,15 @@ func init() {
 
 func main() {
 	server := gin.Default()
+
+	server.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"}, // adjust for your frontend origin
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposeHeaders:    []string{"Content-Length", "X-CSRF-Token"},
+		AllowCredentials: true,
+		MaxAge:           24 * time.Hour,
+	}))
 
 	dbURL := os.Getenv("DB_URL")
 	if dbURL == "" {

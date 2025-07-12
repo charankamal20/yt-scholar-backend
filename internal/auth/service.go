@@ -10,6 +10,8 @@ import (
 type AuthService interface {
 	registerUser(c context.Context, user GoogleOAuthUser) *HTTPError
 	loginUser(c context.Context, user GoogleOAuthUser) *HTTPError
+
+	getUserInfo(c context.Context, userID string) (authStore.User, *HTTPError)
 }
 
 type Service struct {
@@ -28,7 +30,7 @@ func (s *Service) loginUser(c context.Context, user GoogleOAuthUser) *HTTPError 
 		if err == sql.ErrNoRows {
 			return ErrUserNotFound
 		}
-		
+
 		return ErrServer(err)
 	}
 
@@ -50,4 +52,17 @@ func (s *Service) registerUser(c context.Context, user GoogleOAuthUser) *HTTPErr
 		return ErrServer(err)
 	}
 	return nil
+}
+
+func (s *Service) getUserInfo(c context.Context, userID string) (authStore.User, *HTTPError) {
+	dbUser, err := s.store.GetUserById(c, userID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return authStore.User{}, ErrUserNotFound
+		}
+
+		return authStore.User{}, ErrServer(err)
+	}
+
+	return dbUser, nil
 }

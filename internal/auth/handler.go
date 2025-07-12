@@ -3,9 +3,11 @@ package auth
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"time"
 
+	middleware "github.com/charankamal20/youtube-scholar-backend/internal/common"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
 )
@@ -85,8 +87,40 @@ func (a *AuthServer) oAuthCallbackHandler(c *gin.Context) {
 		return
 	}
 
-	token, err := a.tokenService.CreateToken(userInfo.ID, userInfo.Email)
+	token, err := a.tokenService.CreateToken(userInfo.ID, userInfo.Email, nil)
 
 	c.SetCookie("access_token", token, int(time.Hour*24), "/", "localhost", true, true)
-	c.JSON(http.StatusOK, "Logged In")
+	c.SetCookie("user_id", userInfo.ID, int(time.Hour*24), "/", "localhost", true, false)
+
+	// c.JSON(http.StatusOK, "Logged In")
+	c.Redirect(http.StatusPermanentRedirect, "http://localhost:3000/")
+}
+
+func (a *AuthServer) getUserInfoHandler(ctx *gin.Context) {
+	userId, exists := middleware.GetAuthUserID(ctx)
+	if !exists {
+		ctx.AbortWithError(http.StatusUnauthorized, errors.New("user id not available"))
+		return
+	}
+
+	user, err := a.service.getUserInfo(ctx.Request.Context(), userId)
+	if err != nil {
+		ctx.JSON(err.Code, err.GetGinError())
+		return
+	}
+
+	ctx.JSON(http.StatusOK, user)
+}
+
+func (a *AuthServer) getPublicKeyHandler(c *gin.Context) {
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Cache-Control", "public, max-age=3600")
+
+	_, err := c.Writer.Write(a.tokenService.PublicKey())
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": "failed to serve public key",
+		})
+		return
+	}
 }

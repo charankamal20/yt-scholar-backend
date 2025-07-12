@@ -7,10 +7,12 @@
 package auth
 
 import (
+	"log"
 	"os"
 
 	authStore "github.com/charankamal20/youtube-scholar-backend/database/repository/auth"
 	_ "github.com/charankamal20/youtube-scholar-backend/docs"
+	middleware "github.com/charankamal20/youtube-scholar-backend/internal/common"
 	"github.com/charankamal20/youtube-scholar-backend/pkg/token"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
@@ -37,7 +39,11 @@ func NewAuth(srv *gin.Engine, store authStore.Querier) *AuthServer {
 		Endpoint:     google.Endpoint,
 	}
 
-	tokenService := token.NewPasetoMaker()
+	tokenService, err := token.NewPasetoMaker()
+	if err != nil {
+		log.Fatal("could not make token service")
+		return nil
+	}
 
 	authServer := &AuthServer{
 		config:       conf,
@@ -53,8 +59,15 @@ func NewAuth(srv *gin.Engine, store authStore.Querier) *AuthServer {
 func (a *AuthServer) registerRoutes() {
 	authServer := a.server.Group("/auth")
 
+	authMiddleware := middleware.RequireAuth(a.tokenService)
+
 	authServer.GET("/google/login", a.loginHandler)
 	authServer.GET("/google/register", a.registerHandler)
 
 	authServer.GET("/google/callback", a.oAuthCallbackHandler)
+
+	authServer.GET("/public-key", a.getPublicKeyHandler)
+
+	protectedAuthServer := authServer.Use(authMiddleware)
+	protectedAuthServer.GET("/user", authMiddleware, a.getUserInfoHandler)
 }
