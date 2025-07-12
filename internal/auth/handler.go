@@ -29,8 +29,8 @@ func (a *AuthServer) registerHandler(c *gin.Context) {
 // @Produce      json
 // @Param        code  query     string  true  "OAuth2 Authorization Code"
 // @Success      200   {object}  GoogleOAuthUser  "User info from Google"
-// @Failure      400   {object}  HttpError  "Bad request or token exchange failure"
-// @Failure      500   {object}  HttpError  "Internal server error"
+// @Failure      400   {object}  HTTPError  "Bad request or token exchange failure"
+// @Failure      500   {object}  HTTPError  "Internal server error"
 // @Router       /auth/google/callback [get]
 func (a *AuthServer) oAuthCallbackHandler(c *gin.Context) {
 	code := c.Query("code")
