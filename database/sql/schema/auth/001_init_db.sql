@@ -19,7 +19,7 @@ CREATE TABLE refresh_tokens (
     created_at  TIMESTAMP DEFAULT now(),
     PRIMARY KEY (user_id)
 );
-
+    
 -- +goose Down
 -- SQL in this section is executed when the migration is rolled back
 

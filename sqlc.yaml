@@ -1,11 +1,21 @@
 version: "2"
 sql:
-  - schema: "database/sql/schema"
+  - schema: "database/sql/schema/auth"
     queries: "database/sql/queries/auth"
     engine: "postgresql"
     gen:
       go:
         package: "authStore"
         out: "database/repository/auth"
+        emit_json_tags: true
+        emit_interface: true
+
+  - schema: "database/sql/schema/playlist"
+    queries: "database/sql/queries/playlist"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "playlistStore"
+        out: "database/repository/playlist"
         emit_json_tags: true
         emit_interface: true

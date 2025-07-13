@@ -11,12 +11,17 @@ run: 	build
 docs:
 	@swag init --generalInfo server.go --dir internal/auth --output docs
 
-migrate-up:
-	@goose -dir database/sql/schema postgres $(DB_URL) up
+auth-up:
+	@goose -dir database/sql/schema/auth postgres $(DB_URL) up
 
-migrate-down:
-	@goose -dir database/sql/schema postgres $(DB_URL) down
+auth-down:
+	@goose -dir database/sql/schema/auth postgres $(DB_URL) down
 
+playlist-up:
+	@goose -dir database/sql/schema/playlist postgres $(DB_URL) up
+
+playlist-down:
+	@goose -dir database/sql/schema/playlist postgres $(DB_URL) down
 
 db:
 	sqlc generate

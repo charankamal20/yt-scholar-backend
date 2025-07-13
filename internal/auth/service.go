@@ -4,14 +4,16 @@ import (
 	"context"
 	"database/sql"
 
+	errors "github.com/charankamal20/youtube-scholar-backend/internal/common"
+
 	authStore "github.com/charankamal20/youtube-scholar-backend/database/repository/auth"
 )
 
 type AuthService interface {
-	registerUser(c context.Context, user GoogleOAuthUser) *HTTPError
-	loginUser(c context.Context, user GoogleOAuthUser) *HTTPError
+	registerUser(c context.Context, user GoogleOAuthUser) *errors.HTTPError
+	loginUser(c context.Context, user GoogleOAuthUser) *errors.HTTPError
 
-	getUserInfo(c context.Context, userID string) (authStore.User, *HTTPError)
+	getUserInfo(c context.Context, userID string) (authStore.User, *errors.HTTPError)
 }
 
 type Service struct {
@@ -24,14 +26,14 @@ func newAuthService(store authStore.Querier) *Service {
 	}
 }
 
-func (s *Service) loginUser(c context.Context, user GoogleOAuthUser) *HTTPError {
+func (s *Service) loginUser(c context.Context, user GoogleOAuthUser) *errors.HTTPError {
 	dbUser, err := s.store.GetUserById(c, user.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return ErrUserNotFound
 		}
 
-		return ErrServer(err)
+		return errors.ErrServer(err)
 	}
 
 	if dbUser.UserID == "" || dbUser.Email != user.Email {
@@ -41,7 +43,7 @@ func (s *Service) loginUser(c context.Context, user GoogleOAuthUser) *HTTPError 
 	return nil
 }
 
-func (s *Service) registerUser(c context.Context, user GoogleOAuthUser) *HTTPError {
+func (s *Service) registerUser(c context.Context, user GoogleOAuthUser) *errors.HTTPError {
 	err := s.store.CreateUser(c, authStore.CreateUserParams{
 		Email:      user.Email,
 		UserID:     user.ID,
@@ -49,19 +51,19 @@ func (s *Service) registerUser(c context.Context, user GoogleOAuthUser) *HTTPErr
 		ProfilePic: user.Picture,
 	})
 	if err != nil {
-		return ErrServer(err)
+		return errors.ErrServer(err)
 	}
 	return nil
 }
 
-func (s *Service) getUserInfo(c context.Context, userID string) (authStore.User, *HTTPError) {
+func (s *Service) getUserInfo(c context.Context, userID string) (authStore.User, *errors.HTTPError) {
 	dbUser, err := s.store.GetUserById(c, userID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return authStore.User{}, ErrUserNotFound
 		}
 
-		return authStore.User{}, ErrServer(err)
+		return authStore.User{}, errors.ErrServer(err)
 	}
 
 	return dbUser, nil
